@@ -1,0 +1,35 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    # actions/checkout 워크스페이스에 리포의 코드를 가져오는데 사용됨, 
+    # @v3는 액션의 버전을 나타냅
+    - uses: actions/checkout@v3
+    # - name 부분들은 actions에서 인식하는 단계이다. 
+    # 이 단계별로 run이 있는데 이들이 실패시 해당 name이 표시된다.
+    - name: docker image
+      env:
+      #저장했던 아이디와 비밀번호 연결
+       DOCKER_USER: ${{secrets.DOCKER_USER}}
+       DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+      
+      #로그인 실행 -u(유저) -p(비밀번호)
+      run: |
+       docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - name: Build the Docker image
+    # 도커 이미지 만듦
+      run: docker build --tag ${{secrets.DOCKER_USER}}/hangman:latest .
+    - name: docker push
+    # 만든 이미지 도커허브에 업로드
+      run: docker push ${{secrets.DOCKER_USER}}/hangman:latest
